@@ -4,3 +4,4 @@ _pycache_/
 *.wav
 *.ogg
 *.mp3
+.venv312/
