@@ -44,7 +44,7 @@ JOG_W = 50
 JOG_H = 54
 
 
-#  ESTADO INICIAL
+#  ESTADO
 
 def criar_estado(recorde_anterior=0):
     """
