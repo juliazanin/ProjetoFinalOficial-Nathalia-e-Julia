@@ -42,3 +42,38 @@ VEL_MAX     = 18
 ACELERACAO  = 0.002
 JOG_W = 50
 JOG_H = 54
+
+
+#  ESTADO INICIAL
+
+def criar_estado(recorde_anterior=0):
+    """
+    Cria e retorna o estado inicial do jogo.
+
+    Parâmetros:
+        recorde_anterior (int): melhor pontuação das partidas anteriores.
+
+    Retorna:
+        dict com todos os dados do jogo: jogador, obstáculos, power-ups,
+        pontuação, vidas, velocidade, cenário e flags de controle.
+    """
+    return {
+        "jogador": {
+            "raia": 1, "y": float(RAIAS[1]), "y_alvo": float(RAIAS[1]),
+            "pulando": False, "frame_anim": 0,
+        },
+        "obstaculos": [], "powerups": [], "particulas": [],
+        "nuvens": _criar_nuvens(),
+        "pontuacao": 0, "recorde": recorde_anterior,
+        "vidas": 3, "velocidade": float(VEL_INICIAL),
+        "timer_obs": 60, "timer_pow": 300,
+        "chao_offset": 0, "invencivel": 0,
+        "game_over": False, "frames": 0,
+    }
+
+
+def _criar_nuvens():
+    """Gera lista de nuvens com posições e velocidades aleatórias."""
+    return [{"x": random.randint(0, 800), "y": random.randint(20, 120),
+             "w": random.randint(80, 160), "vel": random.uniform(0.3, 0.8)}
+            for _ in range(6)]
