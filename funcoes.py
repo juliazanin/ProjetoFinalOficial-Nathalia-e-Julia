@@ -116,3 +116,28 @@ def atualizar_jogador(estado):
     else:
         jog["y"] += dy * 0.25
     jog["frame_anim"] = (jog["frame_anim"] + 1) % 20
+
+
+#  OBSTÁCULOS
+
+def atualizar_obstaculos(estado):
+    """
+    Gera novos obstáculos e move os existentes para a esquerda.
+
+    Nunca bloqueia todas as 3 raias ao mesmo tempo — garante que
+    sempre existe pelo menos uma raia livre para o jogador escapar.
+    Remove obstáculos que saíram da tela.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
+    vel = estado["velocidade"]
+    estado["timer_obs"] -= 1
+
+    if estado["timer_obs"] <= 0:
+        base = int(120 - vel * 4)
+        estado["timer_obs"] = max(35, base) + random.randint(-10, 10)
+        n = random.choices([1, 2], weights=[60, 40])[0]
+    estado["obstaculos"] = [o for o in
+        [{**o, "x": o["x"] - vel} for o in estado["obstaculos"]]
+        if o["x"] > -80]
