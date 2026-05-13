@@ -77,3 +77,42 @@ def _criar_nuvens():
     return [{"x": random.randint(0, 800), "y": random.randint(20, 120),
              "w": random.randint(80, 160), "vel": random.uniform(0.3, 0.8)}
             for _ in range(6)]
+
+
+#  JOGADOR
+
+def mover_jogador(estado, direcao):
+    """
+    Move o jogador para a raia acima (-1) ou abaixo (+1).
+
+    Só age se o jogador não está em transição e a raia destino existe.
+
+    Parâmetros:
+        estado (dict): estado atual do jogo.
+        direcao (int): -1 para cima, +1 para baixo.
+    """
+    jog  = estado["jogador"]
+    nova = jog["raia"] + direcao
+    if 0 <= nova <= 2 and abs(jog["y"] - jog["y_alvo"]) < 5:
+        jog["raia"]   = nova
+        jog["y_alvo"] = float(RAIAS[nova])
+        jog["pulando"] = True
+
+
+def atualizar_jogador(estado):
+    """
+    Interpola suavemente a posição vertical do jogador até o alvo.
+
+    Usa fator 0.25 por frame para movimento fluido sem overshoot.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
+    jog = estado["jogador"]
+    dy  = jog["y_alvo"] - jog["y"]
+    if abs(dy) < 2:
+        jog["y"] = jog["y_alvo"]
+        jog["pulando"] = False
+    else:
+        jog["y"] += dy * 0.25
+    jog["frame_anim"] = (jog["frame_anim"] + 1) % 20
