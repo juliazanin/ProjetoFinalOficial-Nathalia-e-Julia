@@ -147,3 +147,25 @@ def atualizar_obstaculos(estado):
     estado["obstaculos"] = [o for o in
         [{**o, "x": o["x"] - vel} for o in estado["obstaculos"]]
         if o["x"] > -80]
+
+def atualizar_powerups(estado):
+    """
+    Gera e move power-ups (estrelas que restauram uma vida).
+
+    Aparecem raramente (a cada 300-500 frames) em raia aleatória.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
+    estado["timer_pow"] -= 1
+    if estado["timer_pow"] <= 0:
+        estado["timer_pow"] = random.randint(300, 500)
+        estado["powerups"].append({
+            "x": float(LARGURA + 20), "raia": random.randint(0, 2), "angulo": 0,
+        })
+
+    estado["powerups"] = [p for p in
+        [{**p, "x": p["x"] - estado["velocidade"]*0.8,
+          "angulo": (p["angulo"] + 4) % 360}
+         for p in estado["powerups"]]
+        if p["x"] > -40]
