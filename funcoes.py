@@ -138,6 +138,12 @@ def atualizar_obstaculos(estado):
         base = int(120 - vel * 4)
         estado["timer_obs"] = max(35, base) + random.randint(-10, 10)
         n = random.choices([1, 2], weights=[60, 40])[0]
+        for r in random.sample([0, 1, 2], n):
+            estado["obstaculos"].append({
+                "x": float(LARGURA + 20), "raia": r,
+                "tipo": random.randint(0, 3),
+                "w": random.randint(30, 55), "h": random.randint(40, 65),
+            })
     estado["obstaculos"] = [o for o in
         [{**o, "x": o["x"] - vel} for o in estado["obstaculos"]]
         if o["x"] > -80]
