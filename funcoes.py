@@ -212,4 +212,16 @@ def checar_colisoes(estado):
             else:
                 obs_novos.append(obs)
 
-
+    pow_novos = []
+    for p in estado["powerups"]:
+        px1, px2 = p["x"] + 4, p["x"] + 36
+        py1      = RAIAS[p["raia"]] + 4
+        py2      = py1 + 36
+        if hx2 > px1 and hx1 < px2 and hy2 > py1 and hy1 < py2:
+            estado["vidas"] = min(5, estado["vidas"] + 1)
+            _burst(estado, p["x"] + 20, RAIAS[p["raia"]] + 20, COR_POWER)
+            resultado = "powerup"
+        else:
+            pow_novos.append(p)
+    estado["powerups"] = pow_novos
+    return resultado
