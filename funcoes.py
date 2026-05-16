@@ -228,4 +228,13 @@ def checar_colisoes(estado):
     estado["powerups"] = pow_novos
     return resultado
 
-
+def _burst(estado, x, y, cor):
+    """Cria explosão de partículas em (x, y)."""
+    for _ in range(14):
+        ang = random.uniform(0, 2 * math.pi)
+        vel = random.uniform(2, 7)
+        estado["particulas"].append({
+            "x": float(x), "y": float(y),
+            "vx": math.cos(ang)*vel, "vy": math.sin(ang)*vel,
+            "vida": 30, "cor": cor,
+        })
