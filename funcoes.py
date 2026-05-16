@@ -169,3 +169,47 @@ def atualizar_powerups(estado):
           "angulo": (p["angulo"] + 4) % 360}
          for p in estado["powerups"]]
         if p["x"] > -40]
+    
+
+#  COLISÕES
+def checar_colisoes(estado):
+    """
+    Verifica colisão do jogador com obstáculos e power-ups.
+
+    Usa hitbox reduzida para tornar o jogo mais justo.
+    Após hit: perde vida, 90 frames de invencibilidade e partículas.
+    Power-up: +1 vida (máx 5) e partículas douradas.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+
+    Retorna:
+        str: "hit", "powerup" ou "" indicando o que aconteceu.
+    """
+    jog = estado["jogador"]
+    jx  = 120
+    jy  = jog["y"]
+    hx1, hx2 = jx + 8, jx + JOG_W - 8
+    hy1, hy2 = jy + 6, jy + JOG_H - 4
+    resultado = ""
+
+    if estado["invencivel"] > 0:
+        estado["invencivel"] -= 1
+    else:
+        obs_novos = []
+        for obs in estado["obstaculos"]:
+            ox1 = obs["x"] + 4
+            ox2 = obs["x"] + obs["w"] - 4
+            oy1 = RAIAS[obs["raia"]] + 4
+            oy2 = RAIAS[obs["raia"]] + obs["h"] - 4
+            if hx2 > ox1 and hx1 < ox2 and hy2 > oy1 and hy1 < oy2:
+                estado["vidas"]     -= 1
+                estado["invencivel"] = 90
+                _burst(estado, jx + JOG_W//2, jy + JOG_H//2, COR_VIDA)
+                resultado = "hit"
+                if estado["vidas"] <= 0:
+                    estado["game_over"] = True
+            else:
+                obs_novos.append(obs)
+
+
