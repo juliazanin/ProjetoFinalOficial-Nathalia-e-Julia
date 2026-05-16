@@ -211,6 +211,8 @@ def checar_colisoes(estado):
                     estado["game_over"] = True
             else:
                 obs_novos.append(obs)
+        if resultado == "hit":
+            estado["obstaculos"] = obs_novos
 
     pow_novos = []
     for p in estado["powerups"]:
@@ -225,3 +227,5 @@ def checar_colisoes(estado):
             pow_novos.append(p)
     estado["powerups"] = pow_novos
     return resultado
+
+
