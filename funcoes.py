@@ -238,3 +238,15 @@ def _burst(estado, x, y, cor):
             "vx": math.cos(ang)*vel, "vy": math.sin(ang)*vel,
             "vida": 30, "cor": cor,
         })
+
+def atualizar_particulas(estado):
+    """Move partículas com gravidade e remove as expiradas."""
+    vivas = []
+    for p in estado["particulas"]:
+        p["x"] += p["vx"]
+        p["y"] += p["vy"]
+        p["vy"] += 0.3
+        p["vida"] -= 1
+        if p["vida"] > 0:
+            vivas.append(p)
+    estado["particulas"] = vivas
