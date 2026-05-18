@@ -287,3 +287,26 @@ def _nuvem(tela, x, y, w):
     pygame.draw.ellipse(tela, BRANCO, (x,        y+h//2,  w,    h))
     pygame.draw.ellipse(tela, BRANCO, (x+w//4,   y,       w//2, h))
     pygame.draw.ellipse(tela, BRANCO, (x+w//2,   y+h//3,  w//3, h//2))
+
+
+def desenhar_fundo(tela, estado):
+    """Preenche céu e desenha nuvens animadas."""
+    tela.fill(FUNDO_CEU)
+    pygame.draw.rect(tela, FUNDO_CEU2, (0, 0, LARGURA, 140))
+    for n in estado["nuvens"]:
+        _nuvem(tela, int(n["x"]), int(n["y"]), n["w"])
+
+
+def desenhar_chao(tela, estado):
+    """Desenha as 3 raias do chão com listras de movimento animadas."""
+    off = int(estado["chao_offset"])
+    for i, ry in enumerate(RAIAS):
+        base = ry + JOG_H - 10
+        cor1 = COR_CHAO if i % 2 == 0 else COR_CHAO2
+        cor2 = COR_CHAO2 if i % 2 == 0 else COR_CHAO
+        pygame.draw.rect(tela, cor1, (0, base, LARGURA, 55))
+        x = -off
+        while x < LARGURA:
+            pygame.draw.rect(tela, cor2, (int(x), base+4, 40, 47))
+            x += 80
+        pygame.draw.rect(tela, COR_CHAO3, (0, base, LARGURA, 4))
