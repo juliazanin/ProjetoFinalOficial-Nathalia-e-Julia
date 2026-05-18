@@ -250,3 +250,31 @@ def atualizar_particulas(estado):
         if p["vida"] > 0:
             vivas.append(p)
     estado["particulas"] = vivas
+
+#  ATUALIZAÇÃO GERAL
+def atualizar_estado(estado):
+    """
+    Avança o jogo um frame: velocidade, pontuação, todos os sistemas.
+
+    Não faz nada se game_over for True.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
+    if estado["game_over"]:
+        return
+    estado["frames"]    += 1
+    estado["pontuacao"] += 1
+    estado["velocidade"] = min(VEL_MAX, VEL_INICIAL + estado["frames"] * ACELERACAO)
+    estado["chao_offset"] = (estado["chao_offset"] + estado["velocidade"]) % 80
+    for n in estado["nuvens"]:
+        n["x"] -= n["vel"]
+        if n["x"] < -n["w"] - 20:
+            n["x"] = LARGURA + 20
+            n["y"] = random.randint(20, 120)
+    atualizar_jogador(estado)
+    atualizar_obstaculos(estado)
+    atualizar_powerups(estado)
+    atualizar_particulas(estado)
+    if estado["pontuacao"] > estado["recorde"]:
+        estado["recorde"] = estado["pontuacao"]
