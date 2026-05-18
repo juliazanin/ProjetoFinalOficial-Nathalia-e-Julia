@@ -278,3 +278,12 @@ def atualizar_estado(estado):
     atualizar_particulas(estado)
     if estado["pontuacao"] > estado["recorde"]:
         estado["recorde"] = estado["pontuacao"]
+
+
+#  DESENHO DO JOGO
+def _nuvem(tela, x, y, w):
+    """Desenha nuvem cartoon com três elipses sobrepostas."""
+    h = w // 3
+    pygame.draw.ellipse(tela, BRANCO, (x,        y+h//2,  w,    h))
+    pygame.draw.ellipse(tela, BRANCO, (x+w//4,   y,       w//2, h))
+    pygame.draw.ellipse(tela, BRANCO, (x+w//2,   y+h//3,  w//3, h//2))
