@@ -347,3 +347,22 @@ def desenhar_jogador(tela, estado):
     bx = int(math.sin(fa * math.pi / 10) * 8)
     pygame.draw.line(tela, COR_CORPO2, (x+8,       y+22), (x,       y+30+bx), 5)
     pygame.draw.line(tela, COR_CORPO2, (x+JOG_W-8, y+22), (x+JOG_W, y+30-bx), 5)
+
+
+def desenhar_obstaculo(tela, obs):
+    """Desenha obstáculo cartoon arredondado com cara de X."""
+    x  = int(obs["x"])
+    y  = RAIAS[obs["raia"]]
+    w, h = obs["w"], obs["h"]
+    cor    = CORES_OBS[obs["tipo"]]
+    escura = tuple(max(0, c-60) for c in cor)
+    clara  = tuple(min(255, c+60) for c in cor)
+    pygame.draw.rect(tela, cor,    (x, y, w, h), border_radius=8)
+    pygame.draw.rect(tela, escura, (x, y, w, h), 3, border_radius=8)
+    pygame.draw.rect(tela, clara,  (x+5, y+5, w//3, 6), border_radius=3)
+    cx, cy = x+w//2, y+h//2-4
+    pygame.draw.line(tela, escura, (cx-10, cy-6), (cx-4,  cy),   3)
+    pygame.draw.line(tela, escura, (cx-4,  cy-6), (cx-10, cy),   3)
+    pygame.draw.line(tela, escura, (cx+4,  cy-6), (cx+10, cy),   3)
+    pygame.draw.line(tela, escura, (cx+10, cy-6), (cx+4,  cy),   3)
+    pygame.draw.arc(tela, escura, pygame.Rect(cx-8, cy+2, 16, 8), 0, math.pi, 2)
