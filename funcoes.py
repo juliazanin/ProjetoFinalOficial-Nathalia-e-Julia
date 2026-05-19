@@ -366,3 +366,20 @@ def desenhar_obstaculo(tela, obs):
     pygame.draw.line(tela, escura, (cx+4,  cy-6), (cx+10, cy),   3)
     pygame.draw.line(tela, escura, (cx+10, cy-6), (cx+4,  cy),   3)
     pygame.draw.arc(tela, escura, pygame.Rect(cx-8, cy+2, 16, 8), 0, math.pi, 2)
+
+
+def desenhar_powerup(tela, p, frames):
+    """Desenha estrela giratória e pulsante de power-up."""
+    x  = int(p["x"])
+    y  = RAIAS[p["raia"]] + 8
+    cx, cy = x+20, y+20
+    ang = math.radians(p["angulo"])
+    pts = []
+    for i in range(10):
+        r = 18 if i % 2 == 0 else 8
+        a = ang + i * math.pi / 5
+        pts.append((cx + r*math.cos(a), cy + r*math.sin(a)))
+    pulso = int(4 * math.sin(frames * 0.1))
+    pygame.draw.circle(tela, COR_POWER2, (cx, cy), 22+pulso)
+    pygame.draw.polygon(tela, COR_POWER, pts)
+    pygame.draw.polygon(tela, BRANCO, pts, 2)
