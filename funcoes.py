@@ -310,3 +310,40 @@ def desenhar_chao(tela, estado):
             pygame.draw.rect(tela, cor2, (int(x), base+4, 40, 47))
             x += 80
         pygame.draw.rect(tela, COR_CHAO3, (0, base, LARGURA, 4))
+
+
+def desenhar_jogador(tela, estado):
+    """Desenha personagem com animação de corrida; pisca se invencível."""
+    jog = estado["jogador"]
+    if estado["invencivel"] > 0 and (estado["invencivel"] // 6) % 2 == 0:
+        return
+    x  = 120
+    y  = int(jog["y"])
+    fa = jog["frame_anim"]
+    perna = int(math.sin(fa * math.pi / 10) * 10)
+    # Sombra
+    pygame.draw.ellipse(tela, (80,160,60), (x+5, y+JOG_H-4, JOG_W-10, 10))
+    # Pernas
+    pygame.draw.rect(tela, COR_CORPO2, (x+12, y+38, 10, 16+perna))
+    pygame.draw.rect(tela, COR_CORPO2, (x+28, y+38, 10, 16-perna))
+    # Corpo
+    pygame.draw.ellipse(tela, COR_CORPO,  (x+4,  y+12, JOG_W-8, 32))
+    pygame.draw.ellipse(tela, COR_CORPO2, (x+4,  y+12, JOG_W-8, 32), 2)
+    # Cabeça
+    pygame.draw.circle(tela, COR_CORPO,  (x+JOG_W//2, y+14), 17)
+    pygame.draw.circle(tela, COR_CORPO2, (x+JOG_W//2, y+14), 17, 2)
+    # Olhos
+    pygame.draw.circle(tela, COR_OLHO,   (x+20, y+10), 6)
+    pygame.draw.circle(tela, COR_OLHO,   (x+34, y+10), 6)
+    pygame.draw.circle(tela, COR_PUPILA, (x+22, y+10), 3)
+    pygame.draw.circle(tela, COR_PUPILA, (x+36, y+10), 3)
+    # Boca
+    if estado["invencivel"] > 0:
+        pygame.draw.circle(tela, COR_BOCA, (x+JOG_W//2, y+20), 4)
+    else:
+        pygame.draw.arc(tela, COR_BOCA,
+                        pygame.Rect(x+16, y+16, 18, 8), math.pi, 2*math.pi, 2)
+    # Braços
+    bx = int(math.sin(fa * math.pi / 10) * 8)
+    pygame.draw.line(tela, COR_CORPO2, (x+8,       y+22), (x,       y+30+bx), 5)
+    pygame.draw.line(tela, COR_CORPO2, (x+JOG_W-8, y+22), (x+JOG_W, y+30-bx), 5)
