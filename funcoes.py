@@ -383,3 +383,11 @@ def desenhar_powerup(tela, p, frames):
     pygame.draw.circle(tela, COR_POWER2, (cx, cy), 22+pulso)
     pygame.draw.polygon(tela, COR_POWER, pts)
     pygame.draw.polygon(tela, BRANCO, pts, 2)
+
+def _coracao(tela, x, y, cor):
+    """Desenha um coração simples para o HUD de vidas."""
+    pygame.draw.circle(tela, cor, (x+6,  y+6),  6)
+    pygame.draw.circle(tela, cor, (x+16, y+6),  6)
+    pygame.draw.polygon(tela, cor, [(x, y+9), (x+11, y+22), (x+22, y+9)])
+
+
