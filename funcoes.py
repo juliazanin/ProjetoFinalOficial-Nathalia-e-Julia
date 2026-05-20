@@ -419,3 +419,31 @@ def desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena):
         pygame.draw.circle(tela, p["cor"], (int(p["x"]), int(p["y"])), 4)
     desenhar_jogador(tela, estado)
     desenhar_hud(tela, estado, fonte_grande, fonte_media, fonte_pequena)
+
+
+def desenhar_menu(tela, recorde, fonte_titulo, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha tela de menu com título, instruções e recorde."""
+    tela.fill(FUNDO_CEU)
+    pygame.draw.rect(tela, FUNDO_CEU2, (0, 0, LARGURA, 140))
+    for x, y, w in [(80,30,140),(350,50,100),(600,25,130)]:
+        _nuvem(tela, x, y, w)
+    pygame.draw.rect(tela, COR_CHAO,  (0, ALTURA-80, LARGURA, 80))
+    pygame.draw.rect(tela, COR_CHAO3, (0, ALTURA-80, LARGURA, 6))
+    s1 = fonte_titulo.render("TURBO DASH", True, PRETO)
+    s2 = fonte_titulo.render("TURBO DASH", True, COR_DEST)
+    tela.blit(s1, (LARGURA//2 - s2.get_width()//2+3, 103))
+    tela.blit(s2, (LARGURA//2 - s2.get_width()//2,   100))
+    for txt, y in [
+        ("Use CIMA e BAIXO para trocar de raia!", 195),
+        ("Desvie dos obstaculos coloridos!", 225),
+        ("Pegue as estrelas para ganhar vida extra!", 255),
+    ]:
+        s = fonte_media.render(txt, True, PRETO)
+        tela.blit(s, (LARGURA//2 - s.get_width()//2, y))
+    if recorde > 0:
+        sr = fonte_media.render(f"Recorde: {recorde:06d}", True, COR_VIDA)
+        tela.blit(sr, (LARGURA//2 - sr.get_width()//2, 295))
+    se = fonte_grande.render("Pressione ENTER para jogar", True, PRETO)
+    se2 = fonte_grande.render("Pressione ENTER para jogar", True, COR_DEST)
+    tela.blit(se,  (LARGURA//2 - se.get_width()//2+2, 342))
+    tela.blit(se2, (LARGURA//2 - se.get_width()//2,   340))
