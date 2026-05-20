@@ -447,3 +447,20 @@ def desenhar_menu(tela, recorde, fonte_titulo, fonte_grande, fonte_media, fonte_
     se2 = fonte_grande.render("Pressione ENTER para jogar", True, COR_DEST)
     tela.blit(se,  (LARGURA//2 - se.get_width()//2+2, 342))
     tela.blit(se2, (LARGURA//2 - se.get_width()//2,   340))
+
+
+def desenhar_game_over(tela, estado, fonte_titulo, fonte_grande, fonte_media):
+    """Overlay escuro de game over com pontuação e recorde."""
+    ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+    ov.fill((20, 10, 40, 210))
+    tela.blit(ov, (0, 0))
+    cy = ALTURA // 2
+    for txt, cor, dy in [
+        ("GAME OVER",                          COR_VIDA,       -100),
+        (f"Pontuacao: {estado['pontuacao']:06d}", BRANCO,       -20),
+        (f"Recorde:   {estado['recorde']:06d}",  COR_DEST,      30),
+        ("ENTER: jogar de novo   ESC: menu",   (180,200,255),   90),
+    ]:
+        f = fonte_titulo if dy == -100 else (fonte_grande if dy != 90 else fonte_media)
+        s = f.render(txt, True, cor)
+        tela.blit(s, (LARGURA//2 - s.get_width()//2, cy+dy))
