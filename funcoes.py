@@ -464,3 +464,13 @@ def desenhar_game_over(tela, estado, fonte_titulo, fonte_grande, fonte_media):
         f = fonte_titulo if dy == -100 else (fonte_grande if dy != 90 else fonte_media)
         s = f.render(txt, True, cor)
         tela.blit(s, (LARGURA//2 - s.get_width()//2, cy+dy))
+
+def desenhar_pausa(tela, fonte_titulo, fonte_media):
+    """Overlay de pausa."""
+    ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
+    ov.fill((20, 10, 40, 180))
+    tela.blit(ov, (0, 0))
+    s1 = fonte_titulo.render("PAUSADO", True, COR_DEST)
+    s2 = fonte_media.render("P ou ESC: continuar   M: menu", True, BRANCO)
+    tela.blit(s1, (LARGURA//2 - s1.get_width()//2, ALTURA//2 - 50))
+    tela.blit(s2, (LARGURA//2 - s2.get_width()//2, ALTURA//2 + 20))
