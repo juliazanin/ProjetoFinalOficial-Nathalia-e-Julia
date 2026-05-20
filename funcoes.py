@@ -390,4 +390,32 @@ def _coracao(tela, x, y, cor):
     pygame.draw.circle(tela, cor, (x+16, y+6),  6)
     pygame.draw.polygon(tela, cor, [(x, y+9), (x+11, y+22), (x+22, y+9)])
 
+def desenhar_hud(tela, estado, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha pontuação, recorde, vidas e barra de velocidade."""
+    pygame.draw.rect(tela, COR_HUD, (0, 0, LARGURA, 42))
+    pygame.draw.rect(tela, (60,60,100), (0, 42, LARGURA, 2))
+    s = fonte_grande.render(f"{estado['pontuacao']:06d}", True, COR_DEST)
+    tela.blit(s, (LARGURA//2 - s.get_width()//2, 4))
+    sr = fonte_pequena.render(f"recorde: {estado['recorde']:06d}", True, (180,200,255))
+    tela.blit(sr, (LARGURA//2 - sr.get_width()//2, 28))
+    for i in range(5):
+        _coracao(tela, 14+i*32, 8, COR_VIDA if i < estado["vidas"] else (70,70,90))
+    sv = fonte_pequena.render("VELOCIDADE", True, (180,200,255))
+    tela.blit(sv, (LARGURA-130, 6))
+    pct = (estado["velocidade"]-VEL_INICIAL) / (VEL_MAX-VEL_INICIAL)
+    pygame.draw.rect(tela, (60,60,100),  (LARGURA-130, 20, 120, 10), border_radius=5)
+    pygame.draw.rect(tela, COR_DEST,     (LARGURA-130, 20, int(120*pct), 10), border_radius=5)
 
+
+def desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha o frame completo: fundo, chão, objetos, jogador e HUD."""
+    desenhar_fundo(tela, estado)
+    desenhar_chao(tela, estado)
+    for p in estado["powerups"]:
+        desenhar_powerup(tela, p, estado["frames"])
+    for obs in estado["obstaculos"]:
+        desenhar_obstaculo(tela, obs)
+    for p in estado["particulas"]:
+        pygame.draw.circle(tela, p["cor"], (int(p["x"]), int(p["y"])), 4)
+    desenhar_jogador(tela, estado)
+    desenhar_hud(tela, estado, fonte_grande, fonte_media, fonte_pequena)
