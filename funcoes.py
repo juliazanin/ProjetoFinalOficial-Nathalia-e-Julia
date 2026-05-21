@@ -489,7 +489,7 @@ def criar_sons():
         import numpy as np
         taxa = 44100
 
-        # ── Utilitários ────────────────────────────────────────────────
+        #  Utilitários ────────────────────────────────────────────────
 
         def senoide(freq, dur, vol=1.0, envelope=None):
             n = int(taxa * dur)
@@ -557,3 +557,78 @@ def criar_sons():
 
         def silencio(dur):
             return np.zeros(int(taxa * dur))
+        
+        # Frequências das notas
+        DO4=261.63; RE4=293.66; MI4=329.63; FA4=349.23
+        SOL4=392.0; LA4=440.0; SI4=493.88
+        DO5=523.25; RE5=587.33; MI5=659.25; FA5=698.46
+        SOL5=783.99; LA5=880.0
+        DO3=130.81; SOL3=196.0; MI3=164.81; LA3=220.0
+
+        # Efeitos ────────────────────────────────────────────────────
+        # Pulo
+        n_pulo = int(taxa * 0.12)
+        t_pulo = np.linspace(0, 0.12, n_pulo, endpoint=False)
+        freq_sweep = np.linspace(400, 700, n_pulo)
+        w_pulo = np.sin(2 * math.pi * np.cumsum(freq_sweep) / taxa)
+        w_pulo *= env_decay(t_pulo, 0.12, 8)
+        sons["pulo"] = to_sound(w_pulo, 0.22)
+
+        # Hit
+        n_hit  = int(taxa * 0.22)
+        t_hit  = np.linspace(0, 0.22, n_hit, endpoint=False)
+        grave  = np.sin(2 * math.pi * np.linspace(200, 50, n_hit) * t_hit)
+        ruido  = np.random.uniform(-1, 1, n_hit)
+        w_hit  = grave * 0.7 + ruido * 0.3
+        w_hit *= np.exp(-9 * t_hit / 0.22)
+        vibr   = np.sin(2 * math.pi * 35 * t_hit) * np.exp(-5 * t_hit / 0.22) * 0.3
+        w_hit += vibr
+        sons["hit"] = to_sound(w_hit, 0.55)
+
+        # Powerup
+        def nota_magica(freq, dur, vol=1.0):
+            n   = int(taxa * dur)
+            t   = np.linspace(0, dur, n, endpoint=False)
+            w   = (np.sin(2*math.pi*freq*t)      * 0.50
+                 + np.sin(2*math.pi*freq*2*t)     * 0.25
+                 + np.sin(2*math.pi*freq*3*t)     * 0.12
+                 + np.sin(2*math.pi*freq*4*t)     * 0.08)
+            env = np.exp(-4 * t / dur)
+            return w * env * vol
+
+        n_sh   = int(taxa * 0.18)
+        t_sh   = np.linspace(0, 0.18, n_sh, endpoint=False)
+        shimmer = (np.sin(2*math.pi*1200*t_sh) * 0.3
+                 + np.sin(2*math.pi*1500*t_sh) * 0.2
+                 + np.sin(2*math.pi*1800*t_sh) * 0.1) * np.exp(-8*t_sh/0.18)
+        w_pow = concat(
+            nota_magica(DO5,    0.09, 0.6),
+            nota_magica(MI5,    0.09, 0.65),
+            nota_magica(SOL5,   0.09, 0.70),
+            nota_magica(DO5*2,  0.18, 0.80) + shimmer,
+        )
+        sons["powerup"] = to_sound(w_pow, 0.42)
+
+        # Game over
+        def nota_go(freq, dur, vol=1.0):
+            n  = int(taxa * dur)
+            t  = np.linspace(0, dur, n, endpoint=False)
+            w  = (np.sin(2*math.pi*freq*t)     * 0.55
+                + np.sin(2*math.pi*freq*2*t)    * 0.20
+                + np.sin(2*math.pi*freq*0.5*t)  * 0.15)
+            env = np.concatenate([
+                np.linspace(0, 1, max(1, int(0.03*n))),
+                np.linspace(1, vol, max(1, int(0.10*n))),
+                np.full(max(1, n - int(0.13*n) - int(0.20*n)), vol),
+                np.linspace(vol, 0, max(1, int(0.20*n))),
+            ])[:n]
+            return w * env
+        w_go = concat(
+            nota_go(SOL4, 0.28, 0.80), nota_go(MI4,  0.28, 0.75),
+            nota_go(RE4,  0.28, 0.70), silencio(0.06),
+            nota_go(DO4,  0.22, 0.75), silencio(0.04),
+            nota_go(LA3,  0.55, 0.90),
+        )
+        sons["gameover"] = to_sound(w_go, 0.48)
+
+        
