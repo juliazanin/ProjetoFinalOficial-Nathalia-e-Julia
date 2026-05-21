@@ -631,4 +631,19 @@ def criar_sons():
         )
         sons["gameover"] = to_sound(w_go, 0.48)
 
-        
+        # Recorde
+        w_rec = concat(
+            nota(DO5,  0.10, "sq", 0.5), nota(MI5,  0.10, "sq", 0.5),
+            nota(SOL5, 0.10, "sq", 0.5), nota(DO5,  0.06, "sq", 0.4),
+            nota(SOL5, 0.06, "sq", 0.4), nota(DO5*2,0.25, "sq", 0.7),
+        )
+        sons["recorde"] = to_sound(w_rec, 0.40)
+
+        # Passo
+        n_ps = int(taxa * 0.07)
+        t_ps = np.linspace(0, 0.07, n_ps, endpoint=False)
+        freq_ps = np.linspace(200, 80, n_ps)
+        w_ps = np.sin(2 * math.pi * np.cumsum(freq_ps) / taxa)
+        w_ps += np.random.uniform(-0.15, 0.15, n_ps)
+        w_ps *= env_decay(t_ps, 0.07, 12)
+        sons["passo"] = to_sound(w_ps, 0.18)
