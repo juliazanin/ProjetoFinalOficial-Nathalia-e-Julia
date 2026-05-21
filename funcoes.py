@@ -45,8 +45,17 @@ JOG_H = 54
 
 
 #  ESTADO
-
 def criar_estado(recorde_anterior=0):
+    """
+    Cria e retorna o estado inicial do jogo.
+
+    Parâmetros:
+        recorde_anterior (int): melhor pontuação das partidas anteriores.
+
+    Retorna:
+        dict com todos os dados do jogo: jogador, obstáculos, power-ups,
+        pontuação, vidas, velocidade, cenário e flags de controle.
+    """
     return {
         "jogador": {
             "raia": 1, "y": float(RAIAS[1]), "y_alvo": float(RAIAS[1]),
@@ -63,14 +72,23 @@ def criar_estado(recorde_anterior=0):
 
 
 def _criar_nuvens():
+    """Gera lista de nuvens com posições e velocidades aleatórias."""
     return [{"x": random.randint(0, 800), "y": random.randint(20, 120),
              "w": random.randint(80, 160), "vel": random.uniform(0.3, 0.8)}
             for _ in range(6)]
 
 
 #  JOGADOR
-
 def mover_jogador(estado, direcao):
+    """
+    Move o jogador para a raia acima (-1) ou abaixo (+1).
+
+    Só age se o jogador não está em transição e a raia destino existe.
+
+    Parâmetros:
+        estado (dict): estado atual do jogo.
+        direcao (int): -1 para cima, +1 para baixo.
+    """
     jog  = estado["jogador"]
     nova = jog["raia"] + direcao
     if 0 <= nova <= 2 and abs(jog["y"] - jog["y_alvo"]) < 5:
@@ -80,6 +98,14 @@ def mover_jogador(estado, direcao):
 
 
 def atualizar_jogador(estado):
+    """
+    Interpola suavemente a posição vertical do jogador até o alvo.
+
+    Usa fator 0.25 por frame para movimento fluido sem overshoot.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
     jog = estado["jogador"]
     dy  = jog["y_alvo"] - jog["y"]
     if abs(dy) < 2:
@@ -91,8 +117,17 @@ def atualizar_jogador(estado):
 
 
 #  OBSTÁCULOS
-
 def atualizar_obstaculos(estado):
+    """
+    Gera novos obstáculos e move os existentes para a esquerda.
+
+    Nunca bloqueia todas as 3 raias ao mesmo tempo — garante que
+    sempre existe pelo menos uma raia livre para o jogador escapar.
+    Remove obstáculos que saíram da tela.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
     vel = estado["velocidade"]
     estado["timer_obs"] -= 1
     if estado["timer_obs"] <= 0:
@@ -111,6 +146,14 @@ def atualizar_obstaculos(estado):
 
 
 def atualizar_powerups(estado):
+    """
+    Gera e move power-ups (estrelas que restauram uma vida).
+
+    Aparecem raramente (a cada 300-500 frames) em raia aleatória.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
     estado["timer_pow"] -= 1
     if estado["timer_pow"] <= 0:
         estado["timer_pow"] = random.randint(300, 500)
@@ -125,8 +168,20 @@ def atualizar_powerups(estado):
 
 
 #  COLISÕES
-
 def checar_colisoes(estado):
+    """
+    Verifica colisão do jogador com obstáculos e power-ups.
+
+    Usa hitbox reduzida para tornar o jogo mais justo.
+    Após hit: perde vida, 90 frames de invencibilidade e partículas.
+    Power-up: +1 vida (máx 5) e partículas douradas.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+
+    Retorna:
+        str: "hit", "powerup" ou "" indicando o que aconteceu.
+    """
     jog = estado["jogador"]
     jx  = 120
     jy  = jog["y"]
@@ -169,6 +224,7 @@ def checar_colisoes(estado):
 
 
 def _burst(estado, x, y, cor):
+    """Cria explosão de partículas em (x, y)."""
     for _ in range(14):
         ang = random.uniform(0, 2 * math.pi)
         vel = random.uniform(2, 7)
@@ -180,6 +236,7 @@ def _burst(estado, x, y, cor):
 
 
 def atualizar_particulas(estado):
+    """Move partículas com gravidade e remove as expiradas."""
     vivas = []
     for p in estado["particulas"]:
         p["x"] += p["vx"]
@@ -192,8 +249,15 @@ def atualizar_particulas(estado):
 
 
 #  ATUALIZAÇÃO GERAL
-
 def atualizar_estado(estado):
+    """
+    Avança o jogo um frame: velocidade, pontuação, todos os sistemas.
+
+    Não faz nada se game_over for True.
+
+    Parâmetros:
+        estado (dict): estado atual (modificado in-place).
+    """
     if estado["game_over"]:
         return
     estado["frames"]    += 1
@@ -214,8 +278,8 @@ def atualizar_estado(estado):
 
 
 #  DESENHO
-
 def _nuvem(tela, x, y, w):
+    """Desenha nuvem cartoon com três elipses sobrepostas."""
     h = w // 3
     pygame.draw.ellipse(tela, BRANCO, (x,        y+h//2,  w,    h))
     pygame.draw.ellipse(tela, BRANCO, (x+w//4,   y,       w//2, h))
@@ -223,6 +287,7 @@ def _nuvem(tela, x, y, w):
 
 
 def desenhar_fundo(tela, estado):
+    """Preenche céu e desenha nuvens animadas."""
     tela.fill(FUNDO_CEU)
     pygame.draw.rect(tela, FUNDO_CEU2, (0, 0, LARGURA, 140))
     for n in estado["nuvens"]:
@@ -230,6 +295,7 @@ def desenhar_fundo(tela, estado):
 
 
 def desenhar_chao(tela, estado):
+    """Desenha as 3 raias do chão com listras de movimento animadas."""
     off = int(estado["chao_offset"])
     for i, ry in enumerate(RAIAS):
         base = ry + JOG_H - 10
@@ -244,6 +310,7 @@ def desenhar_chao(tela, estado):
 
 
 def desenhar_jogador(tela, estado):
+    """Desenha personagem com animação de corrida; pisca se invencível."""
     jog = estado["jogador"]
     if estado["invencivel"] > 0 and (estado["invencivel"] // 6) % 2 == 0:
         return
@@ -251,28 +318,36 @@ def desenhar_jogador(tela, estado):
     y  = int(jog["y"])
     fa = jog["frame_anim"]
     perna = int(math.sin(fa * math.pi / 10) * 10)
+    # Sombra
     pygame.draw.ellipse(tela, (80,160,60), (x+5, y+JOG_H-4, JOG_W-10, 10))
+    # Pernas
     pygame.draw.rect(tela, COR_CORPO2, (x+12, y+38, 10, 16+perna))
     pygame.draw.rect(tela, COR_CORPO2, (x+28, y+38, 10, 16-perna))
+    # Corpo
     pygame.draw.ellipse(tela, COR_CORPO,  (x+4,  y+12, JOG_W-8, 32))
     pygame.draw.ellipse(tela, COR_CORPO2, (x+4,  y+12, JOG_W-8, 32), 2)
+    # Cabeça
     pygame.draw.circle(tela, COR_CORPO,  (x+JOG_W//2, y+14), 17)
     pygame.draw.circle(tela, COR_CORPO2, (x+JOG_W//2, y+14), 17, 2)
+    # Olhos
     pygame.draw.circle(tela, COR_OLHO,   (x+20, y+10), 6)
     pygame.draw.circle(tela, COR_OLHO,   (x+34, y+10), 6)
     pygame.draw.circle(tela, COR_PUPILA, (x+22, y+10), 3)
     pygame.draw.circle(tela, COR_PUPILA, (x+36, y+10), 3)
+    # Boca
     if estado["invencivel"] > 0:
         pygame.draw.circle(tela, COR_BOCA, (x+JOG_W//2, y+20), 4)
     else:
         pygame.draw.arc(tela, COR_BOCA,
                         pygame.Rect(x+16, y+16, 18, 8), math.pi, 2*math.pi, 2)
+    # Braços
     bx = int(math.sin(fa * math.pi / 10) * 8)
     pygame.draw.line(tela, COR_CORPO2, (x+8,       y+22), (x,       y+30+bx), 5)
     pygame.draw.line(tela, COR_CORPO2, (x+JOG_W-8, y+22), (x+JOG_W, y+30-bx), 5)
 
 
 def desenhar_obstaculo(tela, obs):
+    """Desenha obstáculo cartoon arredondado com cara de X."""
     x  = int(obs["x"])
     y  = RAIAS[obs["raia"]]
     w, h = obs["w"], obs["h"]
@@ -291,6 +366,7 @@ def desenhar_obstaculo(tela, obs):
 
 
 def desenhar_powerup(tela, p, frames):
+    """Desenha estrela giratória e pulsante de power-up."""
     x  = int(p["x"])
     y  = RAIAS[p["raia"]] + 8
     cx, cy = x+20, y+20
@@ -307,12 +383,14 @@ def desenhar_powerup(tela, p, frames):
 
 
 def _coracao(tela, x, y, cor):
+    """Desenha um coração simples para o HUD de vidas."""
     pygame.draw.circle(tela, cor, (x+6,  y+6),  6)
     pygame.draw.circle(tela, cor, (x+16, y+6),  6)
     pygame.draw.polygon(tela, cor, [(x, y+9), (x+11, y+22), (x+22, y+9)])
 
 
 def desenhar_hud(tela, estado, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha pontuação, recorde, vidas e barra de velocidade."""
     pygame.draw.rect(tela, COR_HUD, (0, 0, LARGURA, 42))
     pygame.draw.rect(tela, (60,60,100), (0, 42, LARGURA, 2))
     s = fonte_grande.render(f"{estado['pontuacao']:06d}", True, COR_DEST)
@@ -329,6 +407,7 @@ def desenhar_hud(tela, estado, fonte_grande, fonte_media, fonte_pequena):
 
 
 def desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha o frame completo: fundo, chão, objetos, jogador e HUD."""
     desenhar_fundo(tela, estado)
     desenhar_chao(tela, estado)
     for p in estado["powerups"]:
@@ -342,6 +421,7 @@ def desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena):
 
 
 def desenhar_menu(tela, recorde, fonte_titulo, fonte_grande, fonte_media, fonte_pequena):
+    """Desenha tela de menu com título, instruções e recorde."""
     tela.fill(FUNDO_CEU)
     pygame.draw.rect(tela, FUNDO_CEU2, (0, 0, LARGURA, 140))
     for x, y, w in [(80,30,140),(350,50,100),(600,25,130)]:
@@ -369,6 +449,7 @@ def desenhar_menu(tela, recorde, fonte_titulo, fonte_grande, fonte_media, fonte_
 
 
 def desenhar_game_over(tela, estado, fonte_titulo, fonte_grande, fonte_media):
+    """Overlay escuro de game over com pontuação e recorde."""
     ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
     ov.fill((20, 10, 40, 210))
     tela.blit(ov, (0, 0))
@@ -385,6 +466,7 @@ def desenhar_game_over(tela, estado, fonte_titulo, fonte_grande, fonte_media):
 
 
 def desenhar_pausa(tela, fonte_titulo, fonte_media):
+    """Overlay de pausa."""
     ov = pygame.Surface((LARGURA, ALTURA), pygame.SRCALPHA)
     ov.fill((20, 10, 40, 180))
     tela.blit(ov, (0, 0))
@@ -394,26 +476,35 @@ def desenhar_pausa(tela, fonte_titulo, fonte_media):
     tela.blit(s2, (LARGURA//2 - s2.get_width()//2, ALTURA//2 + 20))
 
 
-#  SONS E MÚSICAS
-
+#  SONS
 def criar_sons():
+    """
+    Gera todos os efeitos sonoros do jogo via numpy, sem arquivos externos.
+
+    Sons gerados:
+        pulo    — chiado ascendente ao trocar de raia
+        hit     — baque surdo ao trombar em obstáculo
+        powerup — arpejo mágico ao coletar estrela
+        gameover — melodia descendente ao morrer
+        recorde — fanfarra ao bater recorde
+        passo   — batida cadenciada durante a corrida
+
+    As músicas de fundo (menu e jogo) são carregadas do disco no programa.py.
+
+    Retorna:
+        dict {nome: pygame.mixer.Sound} ou {} se numpy indisponível.
+    """
     sons = {}
     try:
         import numpy as np
         taxa = 44100
 
-        def senoide(freq, dur, vol=1.0, envelope=None):
-            n = int(taxa * dur)
-            t = np.linspace(0, dur, n, endpoint=False)
-            w = np.sin(2 * math.pi * freq * t)
-            if envelope is not None:
-                w *= envelope(t, dur)
-            return w * vol
-
         def env_decay(t, dur, velocidade=6):
+            """Envelope de decaimento exponencial."""
             return np.exp(-velocidade * t / dur)
 
         def env_adsr(t, dur, a=0.05, d=0.1, s=0.7, r=0.2):
+            """Envelope ADSR (attack, decay, sustain, release)."""
             n = len(t)
             na = int(a * n); nd = int(d * n); nr = int(r * n)
             ns = n - na - nd - nr
@@ -424,6 +515,7 @@ def criar_sons():
             return np.concatenate([atk, dec, sus, rel])[:n]
 
         def fade(w, taxa_local, ms_in=8, ms_out=8):
+            """Aplica fade-in e fade-out em milissegundos."""
             fi = int(taxa_local * ms_in  / 1000)
             fo = int(taxa_local * ms_out / 1000)
             if fi > 0 and len(w) > fi:
@@ -433,17 +525,18 @@ def criar_sons():
             return w
 
         def to_sound(w, vol=0.35):
+            """Converte array numpy para pygame.mixer.Sound estéreo."""
             w = fade(w, taxa)
             w = np.clip(w * vol * 32767, -32767, 32767).astype(np.int16)
             return pygame.sndarray.make_sound(np.column_stack([w, w]))
 
         def concat(*partes):
+            """Concatena arrays numpy."""
             return np.concatenate(partes)
 
         def nota(freq, dur, forma="tri", vol=1.0):
-            if forma == "sin":
-                return senoide(freq, dur, vol, env_adsr)
-            elif forma == "sq":
+            """Gera uma nota musical com forma de onda escolhida."""
+            if forma == "sq":
                 n = int(taxa * dur)
                 t = np.linspace(0, dur, n, endpoint=False)
                 w = np.sign(np.sin(2 * math.pi * freq * t))
@@ -457,15 +550,17 @@ def criar_sons():
                 return w * env * vol
 
         def silencio(dur):
+            """Gera silêncio."""
             return np.zeros(int(taxa * dur))
 
-        DO4=261.63; RE4=293.66; MI4=329.63; FA4=349.23
-        SOL4=392.0; LA4=440.0; SI4=493.88
+        # Frequências das notas
+        DO4=261.63; RE4=293.66; MI4=329.63
+        SOL4=392.0; LA4=440.0
         DO5=523.25; RE5=587.33; MI5=659.25; FA5=698.46
         SOL5=783.99; LA5=880.0
         DO3=130.81; SOL3=196.0; MI3=164.81; LA3=220.0
 
-        # Pulo
+        # Pulo: chiado ascendente
         n_pulo = int(taxa * 0.12)
         t_pulo = np.linspace(0, 0.12, n_pulo, endpoint=False)
         freq_sweep = np.linspace(400, 700, n_pulo)
@@ -473,7 +568,7 @@ def criar_sons():
         w_pulo *= env_decay(t_pulo, 0.12, 8)
         sons["pulo"] = to_sound(w_pulo, 0.22)
 
-        # Hit
+        # Hit: baque surdo + ruído de impacto
         n_hit  = int(taxa * 0.22)
         t_hit  = np.linspace(0, 0.22, n_hit, endpoint=False)
         grave  = np.sin(2 * math.pi * np.linspace(200, 50, n_hit) * t_hit)
@@ -484,8 +579,9 @@ def criar_sons():
         w_hit += vibr
         sons["hit"] = to_sound(w_hit, 0.55)
 
-        # Powerup
+        # Powerup: arpejo mágico ascendente com shimmer
         def nota_magica(freq, dur, vol=1.0):
+            """Nota com síntese aditiva para efeito mágico."""
             n   = int(taxa * dur)
             t   = np.linspace(0, dur, n, endpoint=False)
             w   = (np.sin(2*math.pi*freq*t)      * 0.50
@@ -508,8 +604,9 @@ def criar_sons():
         )
         sons["powerup"] = to_sound(w_pow, 0.42)
 
-        # Game over
+        # Gameover: fanfarra descendente dramática
         def nota_go(freq, dur, vol=1.0):
+            """Nota longa com envelope dramático para o game over."""
             n  = int(taxa * dur)
             t  = np.linspace(0, dur, n, endpoint=False)
             w  = (np.sin(2*math.pi*freq*t)     * 0.55
@@ -530,7 +627,7 @@ def criar_sons():
         )
         sons["gameover"] = to_sound(w_go, 0.48)
 
-        # Recorde
+        # Recorde: fanfarra animada
         w_rec = concat(
             nota(DO5,  0.10, "sq", 0.5), nota(MI5,  0.10, "sq", 0.5),
             nota(SOL5, 0.10, "sq", 0.5), nota(DO5,  0.06, "sq", 0.4),
@@ -538,7 +635,7 @@ def criar_sons():
         )
         sons["recorde"] = to_sound(w_rec, 0.40)
 
-        # Passo
+        # Passo: batida grave cadenciada
         n_ps = int(taxa * 0.07)
         t_ps = np.linspace(0, 0.07, n_ps, endpoint=False)
         freq_ps = np.linspace(200, 80, n_ps)
@@ -547,97 +644,21 @@ def criar_sons():
         w_ps *= env_decay(t_ps, 0.07, 12)
         sons["passo"] = to_sound(w_ps, 0.18)
 
-        # Musica do menu
-        bpm_menu = 140
-        bat = 60 / bpm_menu
-        col = bat / 2
-        scol = bat / 4
-
-        def kick(dur=0.12):
-            n = int(taxa * dur)
-            t = np.linspace(0, dur, n, endpoint=False)
-            f = np.linspace(180, 40, n)
-            return np.sin(2*math.pi*np.cumsum(f)/taxa) * np.exp(-10*t/dur)
-
-        def snare(dur=0.10):
-            n = int(taxa * dur)
-            t = np.linspace(0, dur, n, endpoint=False)
-            noise = np.random.uniform(-1, 1, n)
-            tonal = np.sin(2*math.pi*200*t)
-            return (noise * 0.6 + tonal * 0.4) * np.exp(-8*t/dur)
-
-        def hihat(dur=0.05):
-            n = int(taxa * dur)
-            return np.random.uniform(-1, 1, n) * np.exp(-15*np.linspace(0,1,n))
-
-        mel_menu = concat(
-            nota(MI5,  col,  "sq", 0.5), nota(MI5,  scol, "sq", 0.5), nota(FA5, scol, "sq", 0.5),
-            nota(SOL5, col,  "sq", 0.6), nota(SOL5, scol, "sq", 0.6), nota(FA5, scol, "sq", 0.5),
-            nota(MI5,  col,  "sq", 0.5), nota(RE5,  col,  "sq", 0.5),
-            nota(DO5,  col,  "sq", 0.5), nota(DO5,  scol, "sq", 0.5), nota(RE5, scol, "sq", 0.5),
-            nota(MI5,  col,  "sq", 0.5), nota(MI5,  scol, "sq", 0.55),nota(RE5, scol, "sq", 0.45),
-            nota(RE5,  bat,  "sq", 0.6),
-            silencio(scol),
-            nota(MI5,  col,  "sq", 0.5), nota(MI5,  scol, "sq", 0.5), nota(FA5, scol, "sq", 0.5),
-            nota(SOL5, col,  "sq", 0.6), nota(LA5,  col,  "sq", 0.65),
-            nota(SOL5, col,  "sq", 0.6), nota(FA5,  col,  "sq", 0.55),
-            nota(MI5,  col,  "sq", 0.5), nota(RE5,  scol, "sq", 0.45),nota(DO5, scol, "sq", 0.5),
-            nota(RE5,  col,  "sq", 0.5), nota(MI5,  col,  "sq", 0.55),
-            nota(DO5,  bat,  "sq", 0.7),
-            silencio(col),
-        )
-
-        baixo_notas = [DO3, DO3, SOL3, SOL3, LA3, LA3, MI3, MI3] * 2
-        baixo_durs  = [bat] * 16
-        bas_menu = concat(*[nota(f, d, "tri", 0.35) for f, d in zip(baixo_notas, baixo_durs)])
-
-        n_loop = len(mel_menu)
-        bat_menu = np.zeros(n_loop)
-        compasso = int(taxa * bat * 4)
-        total_compassos = n_loop // compasso
-        for c in range(total_compassos):
-            base = c * compasso
-            for beat_pos in [0, compasso // 2]:
-                p = base + beat_pos
-                k = kick()
-                end = min(p + len(k), n_loop)
-                bat_menu[p:end] += k[:end-p] * 0.5
-            for beat_pos in [compasso // 4, 3 * compasso // 4]:
-                p = base + beat_pos
-                s_arr = snare()
-                end = min(p + len(s_arr), n_loop)
-                bat_menu[p:end] += s_arr[:end-p] * 0.35
-            for i in range(8):
-                p = base + int(i * compasso / 8)
-                h = hihat()
-                end = min(p + len(h), n_loop)
-                bat_menu[p:end] += h[:end-p] * 0.15
-
-        L = min(len(mel_menu), len(bas_menu), len(bat_menu))
-        mix_menu = mel_menu[:L] * 0.5 + bas_menu[:L] * 0.4 + bat_menu[:L]
-        mix_menu = fade(mix_menu, taxa, ms_in=20, ms_out=30)
-
-        import wave, tempfile, os as _os
-        def _wav(arr, vol=0.35):
-            fd, path = tempfile.mkstemp(suffix=".wav")
-            _os.close(fd)
-            stereo = np.column_stack([arr, arr])
-            data   = np.clip(stereo * vol * 32767, -32767, 32767).astype(np.int16)
-            with wave.open(path, "w") as wf:
-                wf.setnchannels(2)
-                wf.setsampwidth(2)
-                wf.setframerate(taxa)
-                wf.writeframes(data.tobytes())
-            return path
-
-        sons["_wav_menu"] = _wav(mix_menu, 0.40)
-
     except Exception:
         pass
     return sons
 
 
 def tocar_som(sons, nome):
+    """
+    Toca um efeito sonoro curto em canal livre (1-7).
+
+    Nunca interrompe a música de fundo.
+
+    Parâmetros:
+        sons (dict): dicionário de sons.
+        nome (str): nome do efeito a tocar.
+    """
     if nome not in sons:
         return
     try:
