@@ -474,3 +474,86 @@ def desenhar_pausa(tela, fonte_titulo, fonte_media):
     s2 = fonte_media.render("P ou ESC: continuar   M: menu", True, BRANCO)
     tela.blit(s1, (LARGURA//2 - s1.get_width()//2, ALTURA//2 - 50))
     tela.blit(s2, (LARGURA//2 - s2.get_width()//2, ALTURA//2 + 20))
+
+#  SONS E MÚSICAS
+
+def criar_sons():
+    """
+    Gera todos os sons e músicas do jogo via numpy, sem arquivos externos.
+
+    Retorna:
+        dict {nome: pygame.mixer.Sound} ou {} se numpy indisponível.
+    """
+    sons = {}
+    try:
+        import numpy as np
+        taxa = 44100
+
+        # ── Utilitários ────────────────────────────────────────────────
+
+        def senoide(freq, dur, vol=1.0, envelope=None):
+            n = int(taxa * dur)
+            t = np.linspace(0, dur, n, endpoint=False)
+            w = np.sin(2 * math.pi * freq * t)
+            if envelope is not None:
+                w *= envelope(t, dur)
+            return w * vol
+
+        def quadrada(freq, dur, vol=1.0):
+            n = int(taxa * dur)
+            t = np.linspace(0, dur, n, endpoint=False)
+            return np.sign(np.sin(2 * math.pi * freq * t)) * vol
+
+        def triangular(freq, dur, vol=1.0):
+            n = int(taxa * dur)
+            t = np.linspace(0, dur, n, endpoint=False)
+            return (2 / math.pi) * np.arcsin(np.sin(2 * math.pi * freq * t)) * vol
+
+        def env_decay(t, dur, velocidade=6):
+            return np.exp(-velocidade * t / dur)
+
+        def env_adsr(t, dur, a=0.05, d=0.1, s=0.7, r=0.2):
+            n = len(t)
+            na = int(a * n); nd = int(d * n); nr = int(r * n)
+            ns = n - na - nd - nr
+            atk = np.linspace(0, 1,   max(1, na))
+            dec = np.linspace(1, s,   max(1, nd))
+            sus = np.full(max(1, ns), s)
+            rel = np.linspace(s, 0,   max(1, nr))
+            return np.concatenate([atk, dec, sus, rel])[:n]
+
+        def fade(w, taxa_local, ms_in=8, ms_out=8):
+            fi = int(taxa_local * ms_in  / 1000)
+            fo = int(taxa_local * ms_out / 1000)
+            if fi > 0 and len(w) > fi:
+                w[:fi] *= np.linspace(0, 1, fi)
+            if fo > 0 and len(w) > fo:
+                w[-fo:] *= np.linspace(1, 0, fo)
+            return w
+
+        def to_sound(w, vol=0.35):
+            w = fade(w, taxa)
+            w = np.clip(w * vol * 32767, -32767, 32767).astype(np.int16)
+            return pygame.sndarray.make_sound(np.column_stack([w, w]))
+
+        def concat(*partes):
+            return np.concatenate(partes)
+
+        def nota(freq, dur, forma="tri", vol=1.0):
+            if forma == "sin":
+                return senoide(freq, dur, vol, env_adsr)
+            elif forma == "sq":
+                n = int(taxa * dur)
+                t = np.linspace(0, dur, n, endpoint=False)
+                w = np.sign(np.sin(2 * math.pi * freq * t))
+                env = env_adsr(t, dur)[:n]
+                return w * env * vol
+            else:  # tri
+                n = int(taxa * dur)
+                t = np.linspace(0, dur, n, endpoint=False)
+                w = (2/math.pi) * np.arcsin(np.sin(2*math.pi*freq*t))
+                env = env_adsr(t, dur)[:n]
+                return w * env * vol
+
+        def silencio(dur):
+            return np.zeros(int(taxa * dur))
