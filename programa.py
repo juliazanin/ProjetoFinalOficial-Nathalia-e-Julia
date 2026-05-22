@@ -58,3 +58,61 @@ timer_menu      = 0
 tela_atual = "menu"
 rodando    = True
 tocar_musica(MUSICA_MENU)
+
+
+
+while rodando:
+
+    dt = clock.tick(FPS)
+
+    for evento in pygame.event.get():
+        if evento.type == pygame.QUIT:
+            rodando = False
+
+        elif evento.type == pygame.KEYDOWN:
+            tecla = evento.key
+
+            if tela_atual == "menu":
+                if tecla in (pygame.K_RETURN, pygame.K_SPACE):
+                    estado      = criar_estado(recorde_geral)
+                    tela_atual  = "jogando"
+                    timer_passo = 0
+                    timer_menu  = 0
+                    parar_musica()
+                    tocar_musica(MUSICA_JOGO)
+                elif tecla == pygame.K_ESCAPE:
+                    rodando = False
+
+            elif tela_atual == "jogando":
+                if tecla in (pygame.K_UP, pygame.K_w):
+                    mover_jogador(estado, -1)
+                    tocar_som(sons, "pulo")
+                elif tecla in (pygame.K_DOWN, pygame.K_s):
+                    mover_jogador(estado, 1)
+                    tocar_som(sons, "pulo")
+                elif tecla in (pygame.K_p, pygame.K_ESCAPE):
+                    tela_atual = "pausa"
+                    parar_musica()
+
+            elif tela_atual == "pausa":
+                if tecla in (pygame.K_p, pygame.K_ESCAPE):
+                    tela_atual = "jogando"
+                    tocar_musica(MUSICA_JOGO)
+                elif tecla == pygame.K_m:
+                    tela_atual = "menu"
+                    parar_musica()
+                    tocar_musica(MUSICA_MENU)
+
+            elif tela_atual == "gameover":
+                if tecla in (pygame.K_RETURN, pygame.K_SPACE):
+                    estado      = criar_estado(recorde_geral)
+                    tela_atual  = "jogando"
+                    timer_passo = 0
+                    timer_menu  = 0
+                    parar_musica()
+                    tocar_musica(MUSICA_JOGO)
+                elif tecla == pygame.K_ESCAPE:
+                    tela_atual = "menu"
+                    timer_menu = 0
+                    parar_musica()
+                    tocar_musica(MUSICA_MENU)
