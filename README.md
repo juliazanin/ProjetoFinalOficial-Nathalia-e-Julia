@@ -3,7 +3,8 @@ Jogo final de Design de Software — Nathalia Sena e Julia Zanin | Insper 2026/1
 
 ---
 ## Vídeo demonstração
-[link do vídeo — preencher após gravação]
+https://youtu.be/VdyC93r9iBg
+
 
 ---
 ## Sobre o jogo
