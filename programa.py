@@ -116,3 +116,53 @@ while rodando:
                     timer_menu = 0
                     parar_musica()
                     tocar_musica(MUSICA_MENU)
+
+#Atualiza estado
+    if tela_atual == "jogando" and estado is not None:
+
+        atualizar_estado(estado)
+
+        timer_passo += 1
+        if timer_passo >= INTERVALO_PASSO:
+            timer_passo = 0
+            tocar_som(sons, "passo")
+
+        resultado = checar_colisoes(estado)
+        if resultado == "hit":
+            tocar_som(sons, "hit")
+        elif resultado == "powerup":
+            tocar_som(sons, "powerup")
+
+        if estado["game_over"]:
+            parar_musica()
+            tocar_som(sons, "gameover")
+            if estado["pontuacao"] > recorde_geral:
+                recorde_geral = estado["pontuacao"]
+            tela_atual = "gameover"
+            timer_menu = DELAY_MENU
+
+    if timer_menu > 0:
+        timer_menu -= dt
+        if timer_menu <= 0:
+            timer_menu = 0
+            if tela_atual == "gameover":
+                tocar_musica(MUSICA_MENU)
+
+    #Desenho
+    if tela_atual == "menu":
+        desenhar_menu(tela, recorde_geral,
+                      fonte_titulo, fonte_grande, fonte_media, fonte_pequena)
+
+    elif tela_atual in ("jogando", "pausa"):
+        desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena)
+        if tela_atual == "pausa":
+            desenhar_pausa(tela, fonte_titulo, fonte_media)
+
+    elif tela_atual == "gameover":
+        desenhar_jogo(tela, estado, fonte_grande, fonte_media, fonte_pequena)
+        desenhar_game_over(tela, estado, fonte_titulo, fonte_grande, fonte_media)
+
+    pygame.display.update()
+
+# Finalizacao
+pygame.quit()
