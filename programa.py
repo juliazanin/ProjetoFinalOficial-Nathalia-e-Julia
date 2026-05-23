@@ -34,7 +34,7 @@ fonte_pequena = pygame.font.SysFont("consolas", 14)
 sons = criar_sons()
 
 
-pasta = os.path.dirname(os.path.abspath(_file_))
+pasta = os.path.dirname(os.path.abspath(__file__))
 MUSICA_MENU = os.path.join(pasta, "musica_menu.ogg")
 MUSICA_JOGO = os.path.join(pasta, "musica_jogo.mp3")
 
