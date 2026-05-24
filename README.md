@@ -62,4 +62,4 @@ python programa.py
 ---
 ## Uso de Inteligência Artificial
 
-Este projeto utilizou ferramentas de IA (Claude - Anthropic e ChatGPT - disponibilizado pela conta Insper) como apoio no desenvolvimento. O histórico completo de uso está documentado em: [link para o documento]
+Este projeto utilizou ferramentas de IA (Claude - Anthropic e ChatGPT - disponibilizado pela conta Insper) como apoio no desenvolvimento. O histórico completo de uso está documentado em: (https://docs.google.com/document/d/1dHIG-elKFYiKtLn2PlGl6JcM6vbk4hfLeSEDaAExsOE/edit?usp=sharing)
